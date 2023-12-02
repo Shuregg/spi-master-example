@@ -54,14 +54,20 @@ typedef enum logic
 module spi_master
 (
     //SPI Interface
-    input   logic           SCLK_i,  //Clock
-    input   logic           MISO_i,  //Master inpur Slave Output
-    output  logic   [1:0]   SS_o,      //Slave Select
-    output  logic           MOSI_o,  //Master Output Slave Input
+    input   logic           MISO_i,                         //Master inpur Slave Output
+    output  logic           SCLK_o,                         //Serial Clock for peripherial devices
+    output  logic           RST_o                           //Global reset for peripherial devices
+    output  logic           SS0_o,                            //Slave Select
+    output  logic           SS1_o,                           //Slave Select
+    output  logic           SS2_o,                         //Slave Select
+    output  logic           MOSI_o,                         //Master Output Slave Input
 
-    //Controller Interface
-    input   logic           clk_i,
-    input   logic           rst_i,  //Syncr Reset
+    //Controller Interface          
+    input   logic           clk_i,                          //base clock
+    input   logic           rst_i,                          //Syncr global Reset
+    input   logic           SS0_i, 
+    input   logic           SS1_i, 
+    input   logic           SS2_i, 
     input   logic           transaction_started_i,
     input   logic           transaction_size_i
     // input   logic   [1:0]   slave_select_i, 
