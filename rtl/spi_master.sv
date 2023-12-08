@@ -41,7 +41,7 @@
 
 // MODE: CPOL = 0, CPHA = 0.
 
-typedef enum logic 
+typedef enum logic [2:0] 
 {
     RESET       =   3'b000
     IDLE        =   3'b001, 
