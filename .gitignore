@@ -23,7 +23,7 @@ elaborate.txt
 !**/mem
 !**/constraints
 !**/not_project_files
-
+!**/rtl
 *.xpr
 *.cache
 *.runs
