@@ -31,23 +31,13 @@
 // 7. Display the received data on 7-segment indicators.
 // Connect the 7-segment indicators according to the serial scheme, the other devices - according to the parallel scheme.
 
-// 1. Read 4 Bytes from Flash
-// 2. Display this data to 8 HEXs
-// 3. Write data ti Flash using any free address
-// 4. Read data from flash using Fast Read and any address
-// 5. Display to HEX
-// 6. Read data from sensor;
-// 7.Display to HEX
-
 // MODE: CPOL = 0, CPHA = 0.
 
 typedef enum logic [2:0] 
 {
-    RESET       =   3'b000
-    IDLE        =   3'b001, 
-    SHIFT       =   3'b010, 
-    LOAD        =   3'b011,
-    UNLOAD      =   3'b100
+    IDLE            =   3'b000
+    RECEIVE         =   3'b001, 
+    TRANCIEVE       =   3'b010, 
 } State;
 
 
@@ -57,94 +47,131 @@ module spi_master
     input   logic           MISO_i,                         //Master inpur Slave Output
     output  logic           SCLK_o,                         //Serial Clock for peripherial devices
     output  logic           RST_o                           //Global reset for peripherial devices
-    output  logic           SS0_o,                            //Slave Select
-    output  logic           SS1_o,                           //Slave Select
-    output  logic           SS2_o,                         //Slave Select
+    output  logic   [2:0]   SS_o,                           //Slave Select (Flash, Shift register, Giroscope)
     output  logic           MOSI_o,                         //Master Output Slave Input
+
+    output  logic           sr_out_en_o,                     //Shift register output enable    
+    output  logic           sr_we_o,
+    output  logic           sr_wd_o,
 
     //Controller Interface          
     input   logic           clk_i,                          //base clock
     input   logic           rst_i,                          //Syncr global Reset
-    input   logic           SS0_i, 
-    input   logic           SS1_i, 
-    input   logic           SS2_i, 
+    input   logic   [2:0]   SS_i,                           //Slave Select (Flash, Shift register, Giroscope)
     input   logic           transaction_started_i,
-    input   logic           transaction_size_i
-    // input   logic   [1:0]   slave_select_i, 
-    // input   
+
+    input   logic   [7:0]   flash_rw_data_size_i,
+    input   logic           MOSI_i,
+
+    input   logic           sr_out_en_i,                     //Shift register output enable 
+    input   logic           sr_we_i,
+    input   logic           sr_wd_i
     );
     
-    State state, state_next;
+    State logic [2:0] state, logic [2:0] state_next;
     
-    logic [7:0] tx_data;    //transmitted data
-    logic [7:0] rx_data;    //received data
-
-    logic [9:0] bit_counter;//Counter for bit receive/send
-
-    logic [2:0] state;      //Current state
-    // logic [2:0] state_next; //Next State
-
-    logic       SS0;        //Slave select (Flash)
-    logic       SS1;        //Slave select (Shift register)
-    logic       SS2;        //Slave select (Sensor (Hyroscope))
+    // logic [255:0] tx_data;    //transmitted data
+    logic [255:0] rx_data;          //received data
+    
+    logic [8:0] bit_counter;        //Counter for bit receive/send
 
 
-    always_ff @ (posedge clk_i) begin
+    always_ff @(posedge clk_i) begin
         if(rst_i) begin
-            state       <=  RESET;            
+            SS_o        <= 3'b0;
+            sr_out_en_o <= 1'b0;
+            sr_we_o     <= 1'b0;    
+            sr_out_en_o <= 1'b0;
+            state       <= IDLE;
         end else begin
             case(state)
-                RESET:
-                    state   <=   IDLE;
-                IDLE:
-                    case(transaction_started_i)
-                        1'b0:   state   <=   IDLE;
-                        1'b1:   state   <=   SHIFT;
+                IDLE: begin
+                    case(SS_i)
+                        3'b001 :    state <= TRANCIEVE;         //Giroscope
+                        3'b010 :    state <= TRANCIEVE;         //Shift Reg
+                        3'b100 :    state <= TRANCIEVE;         //Flash
+                        default:    state <= IDLE;
                     endcase
-                SHIFT:
-
-                LOAD:
-
-                UNLOAD:
-
+                end
+                TRANCIEVE: begin
+                    if(MISO_i === 1'bz) begin
+                        MOSI_o  <= MOSI_i;
+                    end else begin
+                        MOSI_o  <= 1'bz;
+                        sr_we_o <= 1'b1;
+                        sr_wd_o <= sr_wd_i;
+                        state   <= RECEIVE;
+                    end
+                end
             endcase
-            
         end
-    end    
-
-    always_comb begin// : FSM
-        case(state)
-            RESET:  begin
-                MISO_i      <=  1'b0;
-                MOSI_o      <=  1'b1;
-                tx_data     <=  8'b0;
-                rx_data     <=  8'b0;
-                bit_counter <=  10'b0;
-            end
-            IDLE:   begin
-                case(SS)
-                    2'b00:
-                        state_next  <= IDLE;
-                    2'b00: begin       //FLASH
-
-                    end
-
-                    2'b00: begin
-
-                    end
-
-                    2'b00: begin
-
-                    end
-
-                    default: begin
-                        state_next  <= IDLE;
-                    end
-
-                endcase
-            end
-
-        endcase
     end
+
+    always_ff @(posedge clk_i) begin
+        if(rst_i) begin
+            SS_o        <= 3'b0;
+            sr_out_en_o <= 1'b0;    
+        end else begin
+
+        end
+    end
+    // always_ff @ (posedge clk_i) begin
+    //     if(rst_i) begin
+    //         state       <=  RESET;            
+    //     end else begin
+    //         case(state)
+    //             RESET:
+    //                 state   <=   IDLE;
+    //             IDLE:
+    //                 case(transaction_started_i)
+    //                     1'b0:   state   <=   IDLE;
+    //                     1'b1:   state   <=   SHIFT;
+    //                 endcase
+    //             SHIFT:
+
+    //             LOAD:
+
+    //             UNLOAD:
+
+    //         endcase
+            
+    //     end
+    // end
+
+    // always_comb begin// : FSM
+    //     case(state)
+    //         RESET:  begin
+    //             MISO_i      <=  1'b0;
+    //             MOSI_o      <=  1'b1;
+    //             tx_data     <=  8'b0;
+    //             rx_data     <=  8'b0;
+    //             bit_counter <=  10'b0;
+    //         end
+    //         IDLE:   begin
+    //             case()
+    //                 2'b00:
+    //                     state_next  <= IDLE;
+    //                 2'b00: begin       //FLASH
+
+    //                 end
+
+    //                 2'b00: begin
+
+    //                 end
+
+    //                 2'b00: begin
+
+    //                 end
+
+    //                 default: begin
+    //                     state_next  <= IDLE;
+    //                 end
+
+    //             endcase
+    //         end
+
+    //     endcase
+    // end
+
 endmodule
  
