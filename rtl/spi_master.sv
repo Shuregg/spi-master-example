@@ -35,9 +35,9 @@
 
 typedef enum logic [2:0] 
 {
-    IDLE            =   3'b000
+    IDLE            =   3'b000,
     RECEIVE         =   3'b001, 
-    TRANCIEVE       =   3'b010, 
+    TRANCIEVE       =   3'b010 
 } State;
 
 
@@ -46,8 +46,8 @@ module spi_master
     //SPI Interface
     input   logic           MISO_i,                         //Master inpur Slave Output
     output  logic           SCLK_o,                         //Serial Clock for peripherial devices
-    output  logic           RST_o                           //Global reset for peripherial devices
-    output  logic   [2:0]   SS_o,                           //Slave Select (Flash, Shift register, Giroscope)
+    output  logic           RST_o,                           //Global reset for peripherial devices
+    output  logic   [1:0]   SS_o,                           //Slave Select (Flash, Shift register, Giroscope)
     output  logic           MOSI_o,                         //Master Output Slave Input
 
     output  logic           sr_out_en_o,                     //Shift register output enable    
@@ -57,24 +57,29 @@ module spi_master
     //Controller Interface          
     input   logic           clk_i,                          //base clock
     input   logic           rst_i,                          //Syncr global Reset
-    input   logic   [2:0]   SS_i,                           //Slave Select (Flash, Shift register, Giroscope)
-    input   logic           transaction_started_i,
+    input   logic   [1:0]   SS_i,                           //Slave Select (Flash, Giroscope)
+//    input   logic           transaction_started_i,
 
-    input   logic   [7:0]   flash_rw_data_size_i,
+    input   logic   [7:0]   data_size_i,
     input   logic           MOSI_i,
 
     input   logic           sr_out_en_i,                     //Shift register output enable 
-    input   logic           sr_we_i,
-    input   logic           sr_wd_i
+    input   logic           sr_we_i
+
+    input   logic           rw;
     );
     
-    State logic [2:0] state, logic [2:0] state_next;
+    State state;
     
     // logic [255:0] tx_data;    //transmitted data
     logic [255:0] rx_data;          //received data
     
-    logic [8:0] bit_counter;        //Counter for bit receive/send
+    logic [7:0] bit_counter;        //Counter for bit receive/send
+    
+    logic [1:0] SS_reg;
 
+    assign      SS_o = SS_reg;
+    // assign SS_o = SS_i;
 
     always_ff @(posedge clk_i) begin
         if(rst_i) begin
@@ -82,39 +87,70 @@ module spi_master
             sr_out_en_o <= 1'b0;
             sr_we_o     <= 1'b0;    
             sr_out_en_o <= 1'b0;
+            bit_counter <= 8'b0;
             state       <= IDLE;
         end else begin
             case(state)
                 IDLE: begin
+                    SS_reg <= SS_i;
                     case(SS_i)
-                        3'b001 :    state <= TRANCIEVE;         //Giroscope
-                        3'b010 :    state <= TRANCIEVE;         //Shift Reg
-                        3'b100 :    state <= TRANCIEVE;         //Flash
+                        2'b01 : begin                          //Giroscope
+                            state           <= TRANCIEVE;
+                            bit_counter     <= 8'd16;
+                        end 
+//                        3'b010 :    state <= TRANCIEVE;         //Shift Reg
+                        2'b10 : begin                          //Flash
+                            bit_counter <= bit_counter + 8'd40;
+                            if(data_size_i != 8'b0) begin
+                                state       <= TRANCIEVE;  
+                                bit_counter <= data_size_i;
+                            end else begin
+                                state       <= IDLE;
+                            end
+                        end       
                         default:    state <= IDLE;
                     endcase
                 end
                 TRANCIEVE: begin
-                    if(MISO_i === 1'bz) begin
+                    if(MISO_i === 1'bZ) begin
+                        if(SS_o == 2'b00) begin
+                            state   <= IDLE;
+                        end
                         MOSI_o  <= MOSI_i;
                     end else begin
-                        MOSI_o  <= 1'bz;
-                        sr_we_o <= 1'b1;
-                        sr_wd_o <= sr_wd_i;
-                        state   <= RECEIVE;
+                        MOSI_o      = 1'bZ;                     //Probably we are dumbasses
+                        sr_we_o     = 1'b1;                     //Probably we are dumbasses
+                        sr_wd_o     = MISO_i;                   //Probably we are dumbasses
+                        bit_counter <= data_size_i - 1'b1; 
+                        state       <= RECEIVE;
+                    end
+                    // if(SS_o == 2'b00 && MISO_i === 1'bZ) begin
+                    //     state       <= IDLE;
+                    // end else begin
+                        
+                    // end
+                end
+                RECEIVE: begin
+                    if(bit_counter != 8'b0) begin
+                        sr_wd_o     <= MISO_i;
+                        bit_counter <= bit_counter - 8'b1;
+                    end else begin
+                        state       <= IDLE;
                     end
                 end
             endcase
         end
     end
 
-    always_ff @(posedge clk_i) begin
-        if(rst_i) begin
-            SS_o        <= 3'b0;
-            sr_out_en_o <= 1'b0;    
-        end else begin
+    // always_ff @(posedge clk_i) begin
+    //     if(rst_i) begin
+    //         SS_o        <= 3'b0;
+    //         sr_out_en_o <= 1'b0;    
+    //     end else begin
 
-        end
-    end
+    //     end
+    // end
+
     // always_ff @ (posedge clk_i) begin
     //     if(rst_i) begin
     //         state       <=  RESET;            
