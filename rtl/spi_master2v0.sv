@@ -1,6 +1,4 @@
 module spi_master2v0 (
-
-
 //  Controller Interface          
     input   logic           clk_i,                          //base clock
     input   logic           rst_i,                          //Syncr global Reset
@@ -10,8 +8,8 @@ module spi_master2v0 (
 
     input   logic   [7:0]   data_size_i,                    //Size of bit package
     input   logic           MOSI_i,                         //Bit to send
-    input   logic           sr_out_en_i,                    //Shift register output enable 
-    input   logic           sr_we_i,
+    // input   logic           sr_out_en_i,                    //Shift register output enable 
+    // input   logic           sr_we_i,
 
     input   logic           master_mode_nrw,                //Read = 0, Write = 1;
 //  SPI Interface
@@ -39,7 +37,7 @@ module spi_master2v0 (
     logic [ 7:0]    bit_counter;        //Counter for bit receive/send
     logic [ 7:0]    shift_reg;          //SPI-Master Shift reg
 
-    logic [ 3:0]    SS_reg;
+    logic [ 2:0]    SS_reg;
 
 // State machine states
     typedef enum logic [2:0] {
@@ -50,17 +48,41 @@ module spi_master2v0 (
     assign  state   = next_state;    
     assign  SS_reg  = {cs_flash_i, cs_shift_reg_i, cs_mpu_i};
 
-// FSM
+// Base clock dependencies
     always_ff @(posedge clk_i) begin
         if(rst_i) begin
             next_state      <= IDLE;
+            state           <= IDLE;
             shift_reg       <= 8'h00;
+
             cs_flash_o      <= 1'b0;
             cs_mpu_o        <= 1'b0;
             cs_shift_reg_o  <= 1'b0;
+
+            sr_out_en_o     <= 1'b0;
+            sr_we_o         <= 1'b0;
+            sr_wd_o         <= 1'b0;
         end else begin
             state           <= next_state;
-            case(state)
+        end
+    end 
+//  Transaction processing (FSM)
+    always_ff @(posedge SCLK_o) begin
+        if(rst_i) begin
+            next_state      <= IDLE;
+            state           <= IDLE;
+            shift_reg       <= 8'h00;
+
+            cs_flash_o      <= 1'b0;
+            cs_mpu_o        <= 1'b0;
+            cs_shift_reg_o  <= 1'b0;
+
+            sr_out_en_o     <= 1'b0;
+            sr_we_o         <= 1'b0;
+            sr_wd_o         <= 1'b0;
+        end else begin
+                case(state)
+            //========================IDLE STATE========================      
                 IDLE:           begin
                     case(SS_reg)
                     //  FLASH selected
@@ -70,35 +92,67 @@ module spi_master2v0 (
                         end
                     //  SHIFT REG selected   
                         3'b010: begin
+                            bit_counter     <=  
                             cs_shift_reg_o  <=  1'b1;
-                            next_state      <=  
+                            sr_we_o         <=  1'b1;
+                            sr_out_en_o     <=  1'b1;
+                            sr_wd_o         <=  MOSI_i;
+                            next_state      <=  MPU_READ;
                         end
                     //  MPU selected    
-                        3'b001: begin
-
-                            next_state      <=
+                        2'b001: begin
+                            cs_mpu_o        <=  1'b1;
+                            next_state      <=  
                         end
                         default:
                             next_state      <=  IDLE;
                     endcase
                 end
-
+            //========================FLASH READ========================
                 FLASH_READ:     begin
-                    next_state  <=  
-                end
+                    if(bit_counter != 8'b0) begin
 
+                    end else begin
+                        next_state  <=  
+                    end
+                    
+                end
+            //========================FLASH WRITE========================
                 FLASH_WRITE:    begin
-                    next_state  <=
+                    if(bit_counter != 8'b0) begin
+                        
+                    end else begin
+                        next_state  <=  
+                    end
                 end
-
+            //========================MPU READ========================
                 MPU_READ:       begin
-                    next_state  <=
+                    if(bit_counter != 8'b0) begin
+                        
+                    end else begin
+                        next_state  <=  
+                    end
                 end
-
+            //========================DEFAULT STATE========================
                 default:        begin
                     next_state  <=  IDLE;
                 end
             endcase 
         end
-    end 
+    end
+//  SPI Clock logic
+    always_comb begin
+        if(rst_i) begin
+            SCLK_o  = 1'b1;
+        end else begin
+            case(SS_reg)
+                3'b001, 3'b010, 3'b100: begin
+                    SCLK_o  = clk_i;
+                end
+                default: begin
+                    SCLK_o  = 1'b1;
+                end
+            endcase
+        end
+    end
 endmodule
