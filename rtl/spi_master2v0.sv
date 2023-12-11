@@ -6,7 +6,7 @@ module spi_master2v0 (
     input   logic           cs_shift_reg_i,                 //Slave Select (Flash, Giroscope)
     input   logic           cs_mpu_i,                       //Slave Select (Flash, Giroscope)
 
-    input   logic   [7:0]   data_size_i,                    //Size of bit package
+    input   logic   [12:0]  data_size_i,                    //Size of bit package
     input   logic           MOSI_i,                         //Bit to send
     // input   logic           sr_out_en_i,                    //Shift register output enable 
     // input   logic           sr_we_i,
@@ -25,9 +25,13 @@ module spi_master2v0 (
     output  logic           sr_out_en_o,                    //Shift register output enable    
     output  logic           sr_we_o,
     output  logic           sr_wd_o,
-
-
 );
+// Parameters
+    parameter       MODE_R              = 1'b0;
+    parameter       MODE_W              = 1'b1;
+    parameter [7:0] SERVICE_BITS_VAL_R  = 8'd40;
+    parameter [7:0] SERVICE_BITS_VAL_W  = 8'd40;
+
 // Internal signals
     logic [ 7:0]    flash_data;
     logic [ 3:0]    segment_data;
@@ -41,7 +45,7 @@ module spi_master2v0 (
 
 // State machine states
     typedef enum logic [2:0] {
-        IDLE, FLASH_READ, FLASH_WRITE, MPU_READ
+        IDLE, FLASH_READ, FLASH_WRITE, MPU_READ, SHREG_WRITE
     } state_t;
     state_t state, next_state;
 
@@ -69,26 +73,26 @@ module spi_master2v0 (
 //========================Transaction processing (FSM)================================================
     always_ff @(posedge SCLK_o) begin
         if(rst_i) begin
-            next_state      <= IDLE;
-            state           <= IDLE;
-            shift_reg       <= 8'h00;
-
-            cs_flash_o      <= 1'b0;
-            cs_mpu_o        <= 1'b0;
-            cs_shift_reg_o  <= 1'b0;
-
-            sr_out_en_o     <= 1'b0;
-            sr_we_o         <= 1'b0;
-            sr_wd_o         <= 1'b0;
+            bit_counter <= 8'b0;
         end else begin
-                case(state)
+            case(state)
             //========================IDLE STATE========================      
                 IDLE:           begin
                     case(SS_reg)
                     //  FLASH selected
                         3'b100: begin
                             cs_flash_o      <=  1'b1;
-                            next_state      <=  master_mode_nrw ? FLASH_WRITE : FLASH_READ;    
+                            // next_state      <=  master_mode_nrw ? FLASH_WRITE : FLASH_READ;    
+                            case(master_mode_nrw)
+                                MODE_R: begin
+                                    bit_counter <= bit_counter + 8'd40;     //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
+                                    next_state  <= FLASH_READ;
+                                end
+                                MODE_W: begin
+                                    bit_counter <= bit_counter + 8'd32        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
+                                    next_state  <= FLASH_WRITE;
+                                end
+                            endcase
                         end
                     //  SHIFT REG selected   
                         3'b010: begin
@@ -97,12 +101,12 @@ module spi_master2v0 (
                             sr_we_o         <=  1'b1;
                             sr_out_en_o     <=  1'b1;
                             sr_wd_o         <=  MOSI_i;
-                            next_state      <=  MPU_READ;
+                            next_state      <=  SHREG_WRITE;
                         end
                     //  MPU selected    
                         2'b001: begin
                             cs_mpu_o        <=  1'b1;
-                            next_state      <=  
+                            next_state      <=  MPU_READ;
                         end
                         default:
                             next_state      <=  IDLE;
@@ -111,31 +115,40 @@ module spi_master2v0 (
             //========================FLASH READ========================
                 FLASH_READ:     begin
                     if(bit_counter != 8'b0) begin
-
+                        bit_counter     <=  bit_counter = 8'd1;
                     end else begin
-                        next_state  <=  
+                        
+                        next_state      <=  IDLE;
                     end
                     
                 end
             //========================FLASH WRITE========================
                 FLASH_WRITE:    begin
                     if(bit_counter != 8'b0) begin
-                        
+                        bit_counter     <=  bit_counter = 8'd1;   
                     end else begin
-                        next_state  <=  
+                        next_state      <=  IDLE;
+                    end
+                end
+                SHREG_WRITE:    begin
+                    if(bit_counter != 8'b0) begin
+                        bit_counter     <=  bit_counter = 8'd1;
+                    end else begin
+                        
+                        next_state      <=  IDLE;
                     end
                 end
             //========================MPU READ========================
                 MPU_READ:       begin
                     if(bit_counter != 8'b0) begin
-                        
+                        bit_counter     <=  bit_counter = 8'd1;
                     end else begin
-                        next_state  <=  
+                        next_state      <=  IDLE;
                     end
                 end
             //========================DEFAULT STATE========================
                 default:        begin
-                    next_state  <=  IDLE;
+                    next_state          <=  IDLE;
                 end
             endcase 
         end
