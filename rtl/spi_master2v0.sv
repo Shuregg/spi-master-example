@@ -48,7 +48,7 @@ module spi_master2v0 (
     assign  state   = next_state;    
     assign  SS_reg  = {cs_flash_i, cs_shift_reg_i, cs_mpu_i};
 
-// Base clock dependencies
+//========================Base clock dependencies================================================
     always_ff @(posedge clk_i) begin
         if(rst_i) begin
             next_state      <= IDLE;
@@ -66,7 +66,7 @@ module spi_master2v0 (
             state           <= next_state;
         end
     end 
-//  Transaction processing (FSM)
+//========================Transaction processing (FSM)================================================
     always_ff @(posedge SCLK_o) begin
         if(rst_i) begin
             next_state      <= IDLE;
@@ -92,7 +92,7 @@ module spi_master2v0 (
                         end
                     //  SHIFT REG selected   
                         3'b010: begin
-                            bit_counter     <=  
+                            bit_counter     <=  8'd15;  //16 - 1
                             cs_shift_reg_o  <=  1'b1;
                             sr_we_o         <=  1'b1;
                             sr_out_en_o     <=  1'b1;
@@ -140,7 +140,7 @@ module spi_master2v0 (
             endcase 
         end
     end
-//  SPI Clock logic
+//========================SPI Clock logic================================================
     always_comb begin
         if(rst_i) begin
             SCLK_o  = 1'b1;
