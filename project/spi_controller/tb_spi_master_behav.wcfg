@@ -11,15 +11,19 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="425000fs"></ZoomStartTime>
-      <ZoomEndTime time="1115001fs"></ZoomEndTime>
-      <Cursor1Time time="1000000fs"></Cursor1Time>
+      <ZoomStartTime time="2271480fs"></ZoomStartTime>
+      <ZoomEndTime time="3531481fs"></ZoomEndTime>
+      <Cursor1Time time="2612480fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
       <ValueColumnWidth column_width="134"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="29" />
+   <wvobject type="logic" fp_name="/tb_spi_master/flash_we_o">
+      <obj_property name="ElementShortName">flash_we_o</obj_property>
+      <obj_property name="ObjectShortName">flash_we_o</obj_property>
+   </wvobject>
    <wvobject type="logic" fp_name="/tb_spi_master/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -74,22 +78,18 @@
       <obj_property name="ElementShortName">sr_out_en_o</obj_property>
       <obj_property name="ObjectShortName">sr_out_en_o</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/tb_spi_master/flash_we_o">
-      <obj_property name="ElementShortName">flash_we_o</obj_property>
-      <obj_property name="ObjectShortName">flash_we_o</obj_property>
-   </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/sevenseg_decode">
-      <obj_property name="ElementShortName">sevenseg_decode[3:0]</obj_property>
-      <obj_property name="ObjectShortName">sevenseg_decode[3:0]</obj_property>
+      <obj_property name="ElementShortName">sevenseg_decode[7:0][3:0]</obj_property>
+      <obj_property name="ObjectShortName">sevenseg_decode[7:0][3:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/sevenseg">
-      <obj_property name="ElementShortName">sevenseg[6:0]</obj_property>
-      <obj_property name="ObjectShortName">sevenseg[6:0]</obj_property>
+      <obj_property name="ElementShortName">sevenseg[7:0][6:0]</obj_property>
+      <obj_property name="ObjectShortName">sevenseg[7:0][6:0]</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/sh_reg_trans">
       <obj_property name="ElementShortName">sh_reg_trans[7:0]</obj_property>
       <obj_property name="ObjectShortName">sh_reg_trans[7:0]</obj_property>
-      <obj_property name="Radix">BINARYRADIX</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/sh_trans">
       <obj_property name="ElementShortName">sh_trans[7:0]</obj_property>

@@ -76,7 +76,7 @@ module spi_master2v0 (
  
     assign  SS_wire = {cs_flash_i, cs_shift_reg_i, cs_mpu_i};
 
-//========================Base clock dependencies================================================
+//======================== Base clock dependencies ================================================
     always_ff @(posedge clk_i) begin
         if(rst_i) begin
             next_state      <= IDLE;
@@ -163,8 +163,9 @@ module spi_master2v0 (
                 FLASH_WRITE:    begin
                     if(bit_counter != 8'b0 && cs_flash_o == 1'b1) begin
                         bit_counter     <=  bit_counter - 8'd1;
+                        MOSI_o          <=  MOSI_i;
                         if (bit_counter <= SERVICE_BITS_NUM_W - 8'd8 && bit_counter > 8'd8) begin
-                            MOSI_o      <= MOSI_i;
+                            //  MOSI_o      <= MOSI_i;
                             flash_we_o  <= 1'b1;
                         end else begin
                             flash_we_o  <= 1'b0;
@@ -237,4 +238,7 @@ module spi_master2v0 (
             endcase
         end
     end
+    
+    assign sr_out_en_o = (SS_wire == 3'b0) ? 1'b1 : 1'b0; 
+    
 endmodule
