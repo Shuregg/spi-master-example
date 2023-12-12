@@ -27,16 +27,16 @@ module spi_master2v0 (
     output  logic           sr_wd_o,
 );
 // Parameters
-    parameter       MODE_R              = 1'b0;
-    parameter       MODE_W              = 1'b1;
+    parameter       FLASH_MODE_R        = 1'b0;
+    parameter       FLASH_MODE_W        = 1'b1;
+    parameter       MPU_MODE_R          = 1'b1;
+    parameter       MPU_MODE_W          = 1'b0;
     parameter [7:0] SERVICE_BITS_NUM_R  = 8'd40;    //Number of service bits in Fast Read operation
     parameter [7:0] SERVICE_BITS_NUM_W  = 8'd32;    //Number of service bits in Program page operation
-
 // Internal signals
     logic [ 7:0]    flash_data;
-    logic [ 3:0]    segment_data;
     logic [ 7:0]    shift_reg_data;
-    logic [15:0]    mpu_data;
+    logic [47:0]    mpu_data;
     
     logic [ 7:0]    bit_counter;        //Counter for bit receive/send
     logic [ 7:0]    shift_reg;          //SPI-Master Shift reg
@@ -51,7 +51,6 @@ module spi_master2v0 (
 
     assign  state   = next_state;    
     assign  SS_reg  = {cs_flash_i, cs_shift_reg_i, cs_mpu_i};
-
 //========================Base clock dependencies================================================
     always_ff @(posedge clk_i) begin
         if(rst_i) begin
@@ -84,11 +83,11 @@ module spi_master2v0 (
                             cs_flash_o      <=  1'b1;
                             // next_state      <=  master_mode_nrw ? FLASH_WRITE : FLASH_READ;    
                             case(master_mode_nrw)
-                                MODE_R: begin
+                                FLASH_MODE_R: begin
                                     bit_counter <= bit_counter + SERVICE_BITS_NUM_R;     //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
                                     next_state  <= FLASH_READ;
                                 end
-                                MODE_W: begin
+                                FLASH_MODE_W: begin
                                     bit_counter <= bit_counter + SERVICE_BITS_NUM_W;        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
                                     next_state  <= FLASH_WRITE;
                                 end
@@ -96,7 +95,7 @@ module spi_master2v0 (
                         end
                     //  SHIFT REG selected   
                         3'b010: begin
-                            bit_counter     <=  8'd15;  //16 - 1
+                            bit_counter     <=  8'd15 +  /*Data bits number*/;  //16 - 1
                             cs_shift_reg_o  <=  1'b1;
                             sr_we_o         <=  1'b1;
                             sr_out_en_o     <=  1'b1;
@@ -105,6 +104,7 @@ module spi_master2v0 (
                         end
                     //  MPU selected    
                         2'b001: begin
+                            bit_counter     <=  8'd48 + /*Service bits number*/ ;          //GYRO_XOUT_H ([15:8]), GYRO_XOUT_L ([7:0]); GYRO_YOUT_H ([15:8]), GYRO_YOUT_L ([7:0]); GYRO_ZOUT_H([15:8]), GYRO_ZOUT_L([7:0]). 48 data bits total.
                             cs_mpu_o        <=  1'b1;
                             next_state      <=  MPU_READ;
                         end
@@ -115,9 +115,8 @@ module spi_master2v0 (
             //========================FLASH READ========================
                 FLASH_READ:     begin
                     if(bit_counter != 8'b0) begin
-                        bit_counter     <=  bit_counter = 8'd1;
+                        bit_counter     <=  bit_counter - 8'd1;
                     end else begin
-                        
                         next_state      <=  IDLE;
                     end
                     
@@ -125,14 +124,15 @@ module spi_master2v0 (
             //========================FLASH WRITE========================
                 FLASH_WRITE:    begin
                     if(bit_counter != 8'b0) begin
-                        bit_counter     <=  bit_counter = 8'd1;   
+                        bit_counter     <=  bit_counter - 8'd1;   
                     end else begin
                         next_state      <=  IDLE;
                     end
                 end
                 SHREG_WRITE:    begin
                     if(bit_counter != 8'b0) begin
-                        bit_counter     <=  bit_counter = 8'd1;
+                        bit_counter     <=  bit_counter - 8'd1;
+                        MOSI_o          <=
                     end else begin
                         
                         next_state      <=  IDLE;
@@ -140,13 +140,22 @@ module spi_master2v0 (
                 end
             //========================MPU READ========================
                 MPU_READ:       begin
-                    if(bit_counter != 8'b0) begin
-                        bit_counter     <=  bit_counter = 8'd1;
+                    if(bit_counter != 8'b0 && cs_mpu_o == 1'b1) begin
+                        if(bit_counter == 8'd48 && MOSI_i == 1'b1) begin
+                            //READ
+                        end else if(bit_counter == 8'd48 && MOSI_i == 1'b0) begin
+                            //WRITE
+                        end else begin
+                            
+                        end
+                        MOSI_o          <= MOSI_i;
+                        mpu_data        <= {MISO_i, mpu_data[47:1]};          
+                        bit_counter     <=  bit_counter - 8'd1;
                     end else begin
                         next_state      <=  IDLE;
                     end
                 end
-            //========================DEFAULT STATE========================
+            //------------------------DEFAULT STATE------------------------
                 default:        begin
                     next_state          <=  IDLE;
                 end
