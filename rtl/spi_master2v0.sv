@@ -190,7 +190,7 @@ module spi_master2v0 (
                     if (bit_counter != 8'b0 && cs_mpu_o == 1'b1) begin
                         bit_counter     <=  bit_counter - 8'd1;
                         if (bit_counter == DATA_BITS_MPU + SERVICE_BITS_MPU_R) begin
-                            if (MISO_i == MPU_MODE_R) begin
+                            if (MOSI_i == MPU_MODE_R) begin
                                 if (is_MISO_z_i != 1'b1) begin
                                     sr_we_o     <= 1'b1;
                                     sr_wd_o     <= MISO_i;

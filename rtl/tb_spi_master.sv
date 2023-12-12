@@ -111,95 +111,144 @@ module tb_spi_master(
    assign sevenseg_decode[5] = (sh_reg_out_data_en) ? sh_reg_data[23:20] : 4'bx;
    assign sevenseg_decode[6] = (sh_reg_out_data_en) ? sh_reg_data[27:24] : 4'bx;
    assign sevenseg_decode[7] = (sh_reg_out_data_en) ? sh_reg_data[31:28] : 4'bx;
+   
+   
+   SevenSegmentDecoder dec1
+   (
+    .in_data        (sevenseg_decode[0]),
+    .out_segments   (sevenseg[0])
+   );
+   
+   SevenSegmentDecoder dec2
+   (
+    .in_data        (sevenseg_decode[1]),
+    .out_segments   (sevenseg[1])
+   );
+   
+   SevenSegmentDecoder dec3
+   (
+    .in_data        (sevenseg_decode[2]),
+    .out_segments   (sevenseg[2])
+   );
+   
+   SevenSegmentDecoder dec4
+   (
+    .in_data        (sevenseg_decode[3]),
+    .out_segments   (sevenseg[3])
+   );
+   
+   SevenSegmentDecoder dec5
+   (
+    .in_data        (sevenseg_decode[4]),
+    .out_segments   (sevenseg[4])
+   );
+   
+   SevenSegmentDecoder dec6
+   (
+    .in_data        (sevenseg_decode[5]),
+    .out_segments   (sevenseg[5])
+   );
+   
+   SevenSegmentDecoder dec7
+   (
+    .in_data        (sevenseg_decode[6]),
+    .out_segments   (sevenseg[6])
+   );
+   
+   SevenSegmentDecoder dec8
+   (
+    .in_data        (sevenseg_decode[7]),
+    .out_segments   (sevenseg[7])
+   );
 
     initial begin
-        // ==================== read 4 bytes from 0hBBBB_BBBB_BBBB in flash ====================
-        // -------------------- send opcode and address -------------------- 
-        rst             =  1'b1;
-        sh_reg_trans    =  8'b0;
-        sh_reg_data     =  128'b0;
-        sh_reg_data_we  =  1'b0;
-        sh_trans_we     =  1'b0;
+//        // ==================== read 4 bytes from 0hBBBB_BBBB_BBBB in flash ====================
+//        // -------------------- send opcode and address -------------------- 
+//        rst             =  1'b1;
+//        sh_reg_trans    =  8'b0;
+//        sh_reg_data     =  128'b0;
+//        sh_reg_data_we  =  1'b0;
+//        sh_trans_we     =  1'b0;
         
-        MISO_i          =  1'bz;
-        is_MISO_z_i     =  1'b1;
+//        MISO_i          =  1'bz;
+//        is_MISO_z_i     =  1'b1;
         
-        master_mode_nrw =  1'b0;
+//        master_mode_nrw =  1'b0;
         
-        // choose flash in selector
-        #(PERIOD);
-        rst         =  1'b0;
-        cs_i        =  3'b100;
-        data_size_i =  12'd32;
+//        // choose flash in selector
+//        #(PERIOD);
+//        rst         =  1'b0;
+//        cs_i        =  3'b100;
+//        data_size_i =  12'd32;
 
-        // to send opcode
-        #(PERIOD/2);
-        sh_trans_we   = 1'b1;
-        sh_trans = 8'h0B;
+//        // to send opcode
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b1;
+//        sh_trans = 8'h0B;
         
-        // set next byte and write disable
-        #(PERIOD/2);
-        sh_trans_we   = 1'b0;
+//        // set next byte and write disable
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
         
-        sh_trans = 8'hBB;
+//        sh_trans = 8'hBB;
         
-        // wait till opcode byte is full read
-        repeat (8) @(posedge clk);
+//        // wait till opcode byte is full read
+//        repeat (8) @(posedge clk);
         
-        // to send 1st addr
-        sh_trans_we   = 1'b1;
+//        // to send 1st addr
+//        sh_trans_we   = 1'b1;
         
         
-        // addr 2nd byte is the same and write enable false
-        #(PERIOD/2);
-        sh_trans_we   = 1'b0;
+//        // addr 2nd byte is the same and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
         
-        repeat (8) @(posedge clk);
+//        repeat (8) @(posedge clk);
         
-        // to send 2nd addr
-        sh_trans_we   = 1'b1;
+//        // to send 2nd addr
+//        sh_trans_we   = 1'b1;
         
-        // addr 3rd byte is the same and write enable false
-        #(PERIOD/2);
-        sh_trans_we   = 1'b0;
+//        // addr 3rd byte is the same and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
         
-        repeat (8) @(posedge clk);
+//        repeat (8) @(posedge clk);
         
-        // to send 3rd addr
-        sh_trans_we   = 1'b1;
+//        // to send 3rd addr
+//        sh_trans_we   = 1'b1;
         
-        // dummy clocks byte and write enable false
-        #(PERIOD/2);
-        sh_trans_we   = 1'b0;
-        sh_trans = 8'hzz;
+//        // dummy clocks byte and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+//        sh_trans = 8'hzz;
         
-        repeat (8) @(posedge clk);
+//        repeat (8) @(posedge clk);
         
-        // to send dummy byte
-        sh_trans_we   = 1'b1;
+//        // to send dummy byte
+//        sh_trans_we   = 1'b1;
         
-        // write enable false, finished service frames
-        #(PERIOD/2);
-        sh_trans_we   = 1'b0;
+//        // write enable false, finished service frames
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
         
-        repeat (8) @(posedge clk);
+//        repeat (8) @(posedge clk);
         
-        // -------------------- read data -------------------- 
-        MISO_i          = 1'b1;
-        is_MISO_z_i     = 1'b0;
+//        // -------------------- read data -------------------- 
+//        MISO_i          = 1'b1;
+//        is_MISO_z_i     = 1'b0;
         
-        repeat (32) @(posedge clk);
+//        repeat (32) @(posedge clk);
         
-        MISO_i          = 1'bz;
-        is_MISO_z_i     = 1'b1;
+//        MISO_i          = 1'bz;
+//        is_MISO_z_i     = 1'b1;
         
-        // ====================================== 7seg out ======================================
-        cs_i        =  3'b000;
-        sr_out_en_i =  1'b1;
+//        // ====================================== 7seg out ======================================
+//        cs_i        =  3'b000;
+//        sr_out_en_i =  1'b1;
         
-        repeat (8) @(posedge clk);
+//        repeat (8) @(posedge clk);
         
-        sr_out_en_i =  1'b0;
+//        sr_out_en_i =  1'b0;
         
         // ==================== write 4 bytes to 0hAAAA_AAAA_AAAA in flash ====================
         // -------------------- send opcode and address --------------------  
@@ -310,6 +359,125 @@ module tb_spi_master(
 //        repeat (8) @(posedge clk);
         
 //        sr_out_en_i = 1'b0;
+ 
+ 
+// ==================== FAST read 4 bytes from 0hDDDD_DDDD_DDDD in flash ====================
+        // -------------------- send opcode and address -------------------- 
+        rst             =  1'b1;
+        sh_reg_trans    =  8'b0;
+        sh_reg_data     =  128'b0;
+        sh_reg_data_we  =  1'b0;
+        sh_trans_we     =  1'b0;
+        
+        MISO_i          =  1'bz;
+        is_MISO_z_i     =  1'b1;
+        
+        master_mode_nrw =  1'b0;
+        
+        // choose flash in selector
+        #(PERIOD);
+        rst         =  1'b0;
+        cs_i        =  3'b100;
+        data_size_i =  12'd32;
+
+        // to send opcode
+        #(PERIOD/2);
+        sh_trans_we   = 1'b1;
+        sh_trans = 8'h0B;
+        
+        // set next byte and write disable
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        
+        sh_trans = 8'hDD;
+        
+        // wait till opcode byte is full read
+        repeat (8) @(posedge clk);
+        
+        // to send 1st addr
+        sh_trans_we   = 1'b1;
+        
+        
+        // addr 2nd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        
+        repeat (8) @(posedge clk);
+        
+        // to send 2nd addr
+        sh_trans_we   = 1'b1;
+        
+        // addr 3rd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        
+        repeat (8) @(posedge clk);
+        
+        // to send 3rd addr
+        sh_trans_we   = 1'b1;
+        
+        // dummy clocks byte and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans = 8'hzz;
+        
+        repeat (8) @(posedge clk);
+        
+        // to send dummy byte
+        sh_trans_we   = 1'b1;
+        
+        // write enable false, finished service frames
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        
+        repeat (8) @(posedge clk);
+        
+        // -------------------- read data -------------------- 
+        MISO_i          = 1'b1;
+        is_MISO_z_i     = 1'b0;
+        
+        repeat (32) @(posedge clk);
+        
+        MISO_i          = 1'bz;
+        is_MISO_z_i     = 1'b1;
+        
+        // ====================================== 7seg out ======================================
+        cs_i        =  3'b000;
+        sr_out_en_i =  1'b1;
+        
+        repeat (8) @(posedge clk);
+        
+        sr_out_en_i =  1'b0;
+
+         // ==================== MPU-6000 SUPER MEGA PRO_100 XXX_HAGIBATOP_XXX (read) ====================
+                 // -------------------- send opcode and address -------------------- 
+//        rst             =  1'b1;
+//        sh_reg_trans    =  8'b0;
+//        sh_reg_data     =  128'b0;
+//        sh_reg_data_we  =  1'b0;
+//        sh_trans_we     =  1'b0;
+        
+//        MISO_i          =  1'bz;
+//        is_MISO_z_i     =  1'b1;
+        
+//        master_mode_nrw =  1'b0;
+        
+//        // choose flash in selector
+//        #(PERIOD);
+//        rst         =  1'b0;
+//        cs_i        =  3'b100;
+//        data_size_i =  12'd32;
+
+//        // to send opcode
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b1;
+//        sh_trans = 8'h0B;
+        
+//        // set next byte and write disable
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+        
+//        sh_trans = 8'hDD;
         
         
         $finish();
@@ -337,5 +505,34 @@ module tb_spi_master(
             sh_reg_data <= {sh_reg_data[126:0], sr_wd_o};
         end
     end
+
+endmodule
+
+module SevenSegmentDecoder(
+  input  logic [3:0]  in_data,
+  output logic [6:0]  out_segments
+);
+
+  always_comb begin
+    case (in_data)
+      4'h0: out_segments    = 7'b1000000; // 0
+      4'h1: out_segments    = 7'b1111001; // 1
+      4'h2: out_segments    = 7'b0100100; // 2
+      4'h3: out_segments    = 7'b0110000; // 3
+      4'h4: out_segments    = 7'b0011001; // 4
+      4'h5: out_segments    = 7'b0010010; // 5
+      4'h6: out_segments    = 7'b0000010; // 6
+      4'h7: out_segments    = 7'b1111000; // 7
+      4'h8: out_segments    = 7'b0000000; // 8
+      4'h9: out_segments    = 7'b0011000; // 9
+      4'ha: out_segments    = 7'b0001000; // A
+      4'hb: out_segments    = 7'b0000011; // B
+      4'hc: out_segments    = 7'b1000110; // C
+      4'hd: out_segments    = 7'b0100001; // D
+      4'he: out_segments    = 7'b0000110; // E
+      4'hf: out_segments    = 7'b0001110; // F
+      default: out_segments = 7'b1111111; // Display nothing for invalid input
+    endcase
+  end
 
 endmodule
