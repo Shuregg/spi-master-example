@@ -43,7 +43,7 @@ typedef enum logic [2:0]
 
 module spi_master
 (
-    //SPI Interface
+    // SPI Interface
     input   logic           MISO_i,                         //Master inpur Slave Output
     output  logic           SCLK_o,                         //Serial Clock for peripherial devices
     output  logic           RST_o,                           //Global reset for peripherial devices
@@ -54,7 +54,7 @@ module spi_master
     output  logic           sr_we_o,
     output  logic           sr_wd_o,
 
-    //Controller Interface          
+    // Controller Interface          
     input   logic           clk_i,                          //base clock
     input   logic           rst_i,                          //Syncr global Reset
     input   logic   [1:0]   SS_i,                           //Slave Select (Flash, Giroscope)
@@ -64,9 +64,9 @@ module spi_master
     input   logic           MOSI_i,
 
     input   logic           sr_out_en_i,                     //Shift register output enable 
-    input   logic           sr_we_i
+    input   logic           sr_we_i,
 
-    input   logic           rw;
+    input   logic           rw
     );
     
     State state;
@@ -74,7 +74,7 @@ module spi_master
     // logic [255:0] tx_data;    //transmitted data
     logic [255:0] rx_data;          //received data
     
-    logic [7:0] bit_counter;        //Counter for bit receive/send
+    logic [8:0] bit_counter;        //Counter for bit receive/send
     
     logic [1:0] SS_reg;
 
@@ -85,9 +85,9 @@ module spi_master
         if(rst_i) begin
             SS_o        <= 3'b0;
             sr_out_en_o <= 1'b0;
-            sr_we_o     <= 1'b0;    
+            sr_we_o     <= 1'b0;
             sr_out_en_o <= 1'b0;
-            bit_counter <= 8'b0;
+            bit_counter <= 9'b0;
             state       <= IDLE;
         end else begin
             case(state)
@@ -96,40 +96,58 @@ module spi_master
                     case(SS_i)
                         2'b01 : begin                          //Giroscope
                             state           <= TRANCIEVE;
-                            bit_counter     <= 8'd16;
-                        end 
-//                        3'b010 :    state <= TRANCIEVE;         //Shift Reg
+                            bit_counter     <= 9'd16;
+                        end
                         2'b10 : begin                          //Flash
-                            bit_counter <= bit_counter + 8'd40;
                             if(data_size_i != 8'b0) begin
-                                state       <= TRANCIEVE;  
-                                bit_counter <= data_size_i;
+                                state       <= TRANCIEVE;
+                                // fast read    -- 40 instr bits
+                                // program page -- 32 instr bits
+                                bit_counter <= {0, data_size_i} + 9'd40;
                             end else begin
                                 state       <= IDLE;
                             end
-                        end       
+                        end
                         default:    state <= IDLE;
                     endcase
                 end
+
                 TRANCIEVE: begin
-                    if(MISO_i === 1'bZ) begin
-                        if(SS_o == 2'b00) begin
+
+                    if (MISO_i === 1'bZ) begin
+                        if(bit_counter == 9'b0) begin
                             state   <= IDLE;
                         end
-                        MOSI_o  <= MOSI_i;
+                        bit_counter <= bit_counter - 9'b1;
+                        MOSI_o      <= MOSI_i;
                     end else begin
+                        bit_counter <= bit_counter + 9'd8;
+                        bit_counter <= data_size_i - 1'b1;
+                        state       <= RECEIVE;
+                        MOSI_o      = 1'bZ;                     //Probably we are dumbasses
+                        sr_we_o     = 1'b1;                     //Probably we are dumbasses
+                        sr_wd_o     = MISO_i;                   //Probably we are dumbasses
+                    end
+
+                    // if(SS_o == 2'b00 && MISO_i === 1'bZ) begin
+                    //     state       <= IDLE;
+                    // end else begin
+                        
+                    // end
+
+                    if (bit_counter == 9'b0) begin
+                        bit_counter <= bit_counter - 9'b1;
+                        MOSI_o      <= MOSI_i;
+                    end else begin
+                        bit_counter <= bit_counter + 9'd8;
                         MOSI_o      = 1'bZ;                     //Probably we are dumbasses
                         sr_we_o     = 1'b1;                     //Probably we are dumbasses
                         sr_wd_o     = MISO_i;                   //Probably we are dumbasses
                         bit_counter <= data_size_i - 1'b1; 
                         state       <= RECEIVE;
                     end
-                    // if(SS_o == 2'b00 && MISO_i === 1'bZ) begin
-                    //     state       <= IDLE;
-                    // end else begin
-                        
-                    // end
                 end
+
                 RECEIVE: begin
                     if(bit_counter != 8'b0) begin
                         sr_wd_o     <= MISO_i;
