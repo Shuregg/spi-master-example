@@ -29,8 +29,8 @@ module spi_master2v0 (
 // Parameters
     parameter       MODE_R              = 1'b0;
     parameter       MODE_W              = 1'b1;
-    parameter [7:0] SERVICE_BITS_VAL_R  = 8'd40;
-    parameter [7:0] SERVICE_BITS_VAL_W  = 8'd40;
+    parameter [7:0] SERVICE_BITS_NUM_R  = 8'd40;    //Number of service bits in Fast Read operation
+    parameter [7:0] SERVICE_BITS_NUM_W  = 8'd32;    //Number of service bits in Program page operation
 
 // Internal signals
     logic [ 7:0]    flash_data;
@@ -85,11 +85,11 @@ module spi_master2v0 (
                             // next_state      <=  master_mode_nrw ? FLASH_WRITE : FLASH_READ;    
                             case(master_mode_nrw)
                                 MODE_R: begin
-                                    bit_counter <= bit_counter + 8'd40;     //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
+                                    bit_counter <= bit_counter + SERVICE_BITS_NUM_R;     //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
                                     next_state  <= FLASH_READ;
                                 end
                                 MODE_W: begin
-                                    bit_counter <= bit_counter + 8'd32        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
+                                    bit_counter <= bit_counter + SERVICE_BITS_NUM_W;        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
                                     next_state  <= FLASH_WRITE;
                                 end
                             endcase
