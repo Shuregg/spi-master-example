@@ -1,5 +1,5 @@
 module spi_master2v0 (
-//  Controller Interface          
+//  Controller Interface
     input   logic           clk_i,                          //base clock
     input   logic           rst_i,                          //Syncr global Reset
     input   logic           cs_flash_i,                     //Slave Select (Flash)
@@ -30,7 +30,8 @@ module spi_master2v0 (
     output  logic           sr_wd_o,
 
     // Flash signals
-    output  logic           flash_we_o
+    output  logic           flash_we_o,
+    input   logic           is_MISO_z_i
 );
 
 // Parameters
@@ -52,8 +53,6 @@ module spi_master2v0 (
     logic [ 7:0]    bit_counter;        // Counter for bit receive/send
     logic [ 7:0]    shift_reg;          // SPI-Master Shift reg
 
-    logic [ 2:0]    SS_wire;
-
 // State machine states
     typedef enum logic [2:0] {
         IDLE,
@@ -68,11 +67,13 @@ module spi_master2v0 (
         MPU_SS          = 3'b001,
         SHIFT_REG_SS    = 3'b010,
         FLASH_SS        = 3'b100
-    }
+    } slave_sel_t;
 
-    state_t state, next_state;
+    logic [2:0]     SS_wire;
 
-    assign  state   = next_state;    
+    state_t state;
+    state_t next_state;
+ 
     assign  SS_wire = {cs_flash_i, cs_shift_reg_i, cs_mpu_i};
 
 //========================Base clock dependencies================================================
@@ -110,11 +111,11 @@ module spi_master2v0 (
                             // next_state      <=  master_mode_nrw ? FLASH_WRITE : FLASH_READ;    
                             case(master_mode_nrw)
                                 FLASH_MODE_R: begin
-                                    bit_counter <= bit_counter + SERVICE_BITS_NUM_R;     //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
+                                    bit_counter <= data_size_i + SERVICE_BITS_NUM_R;        //8-bit instruction + 24-bit address + 8-bit dummy clocks (For Fast Read mode)
                                     next_state  <= FLASH_READ;
                                 end
                                 FLASH_MODE_W: begin
-                                    bit_counter <= bit_counter + SERVICE_BITS_NUM_W;        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
+                                    bit_counter <= data_size_i + SERVICE_BITS_NUM_W;        //8-bit instruction + 24-bit address + Data Bytes (1 - 2079 Bytes) (For Page Program mode) 
                                     next_state  <= FLASH_WRITE;
                                 end
                             endcase
@@ -146,17 +147,18 @@ module spi_master2v0 (
                 FLASH_READ:     begin
                     if(bit_counter != 8'b0 && cs_flash_o == 1'b1) begin
                         bit_counter     <=  bit_counter - 8'd1;
-                        if (MISO_i !== 1'bz) begin
+                        if (is_MISO_z_i != 1'b1) begin
                             sr_we_o     <= 1'b1;
                             sr_wd_o     <= MISO_i;
                         end else begin
                             sr_we_o     <= 1'b0;
                         end
                     end else begin
-                        sr_we_o         <= 1'b0;
+                        sr_we_o         <=  1'b0;
                         next_state      <=  IDLE;
                     end
                 end
+
             //======================== FLASH WRITE ========================
                 FLASH_WRITE:    begin
                     if(bit_counter != 8'b0 && cs_flash_o == 1'b1) begin
@@ -188,7 +190,7 @@ module spi_master2v0 (
                         bit_counter     <=  bit_counter - 8'd1;
                         if (bit_counter == DATA_BITS_MPU + SERVICE_BITS_MPU_R) begin
                             if (MISO_i == MPU_MODE_R) begin
-                                if (MISO_i !== 1'bz) begin
+                                if (is_MISO_z_i != 1'b1) begin
                                     sr_we_o     <= 1'b1;
                                     sr_wd_o     <= MISO_i;
                                 end else begin
@@ -199,7 +201,7 @@ module spi_master2v0 (
                                 next_state      <= IDLE;
                             end
                         end else begin
-                            if (MISO_i !== 1'bz) begin
+                            if (is_MISO_z_i != 1'b1) begin
                                 sr_we_o     <= 1'b1;
                                 sr_wd_o     <= MISO_i;
                             end else begin

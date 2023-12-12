@@ -103,7 +103,7 @@ module spi_master
                                 state       <= TRANCIEVE;
                                 // fast read    -- 40 instr bits
                                 // program page -- 32 instr bits
-                                bit_counter <= {0, data_size_i} + 9'd40;
+                                bit_counter <= {1'b0, data_size_i} + 9'd40;
                             end else begin
                                 state       <= IDLE;
                             end
