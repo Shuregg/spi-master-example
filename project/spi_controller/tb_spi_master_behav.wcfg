@@ -11,9 +11,9 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2271480fs"></ZoomStartTime>
-      <ZoomEndTime time="3531481fs"></ZoomEndTime>
-      <Cursor1Time time="2612480fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="23550001fs"></ZoomEndTime>
+      <Cursor1Time time="11718929fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
@@ -32,19 +32,27 @@
       <obj_property name="ElementShortName">rst</obj_property>
       <obj_property name="ObjectShortName">rst</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/tb_spi_master/cs_i">
-      <obj_property name="ElementShortName">cs_i[2:0]</obj_property>
-      <obj_property name="ObjectShortName">cs_i[2:0]</obj_property>
-      <obj_property name="Radix">BINARYRADIX</obj_property>
-   </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/data_size_i">
       <obj_property name="ElementShortName">data_size_i[12:0]</obj_property>
       <obj_property name="ObjectShortName">data_size_i[12:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
+   <wvobject type="array" fp_name="/tb_spi_master/cs_i">
+      <obj_property name="ElementShortName">cs_i[2:0]</obj_property>
+      <obj_property name="ObjectShortName">cs_i[2:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_master/MISO_i">
+      <obj_property name="ElementShortName">MISO_i</obj_property>
+      <obj_property name="ObjectShortName">MISO_i</obj_property>
+   </wvobject>
    <wvobject type="logic" fp_name="/tb_spi_master/MOSI_i">
       <obj_property name="ElementShortName">MOSI_i</obj_property>
       <obj_property name="ObjectShortName">MOSI_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_master/SCLK_o">
+      <obj_property name="ElementShortName">SCLK_o</obj_property>
+      <obj_property name="ObjectShortName">SCLK_o</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_spi_master/sr_out_en_i">
       <obj_property name="ElementShortName">sr_out_en_i</obj_property>
@@ -57,10 +65,6 @@
    <wvobject type="logic" fp_name="/tb_spi_master/master_mode_nrw">
       <obj_property name="ElementShortName">master_mode_nrw</obj_property>
       <obj_property name="ObjectShortName">master_mode_nrw</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/tb_spi_master/SCLK_o">
-      <obj_property name="ElementShortName">SCLK_o</obj_property>
-      <obj_property name="ObjectShortName">SCLK_o</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_spi_master/MOSI_o">
       <obj_property name="ElementShortName">MOSI_o</obj_property>
@@ -123,10 +127,6 @@
    <wvobject type="logic" fp_name="/tb_spi_master/sr_wd_o">
       <obj_property name="ElementShortName">sr_wd_o</obj_property>
       <obj_property name="ObjectShortName">sr_wd_o</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/tb_spi_master/MISO_i">
-      <obj_property name="ElementShortName">MISO_i</obj_property>
-      <obj_property name="ObjectShortName">MISO_i</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_spi_master/dut/bit_counter">
       <obj_property name="ElementShortName">bit_counter[7:0]</obj_property>

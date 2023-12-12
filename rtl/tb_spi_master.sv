@@ -164,201 +164,201 @@ module tb_spi_master(
     initial begin
 //        // ==================== read 4 bytes from 0hBBBB_BBBB_BBBB in flash ====================
 //        // -------------------- send opcode and address -------------------- 
-//        rst             =  1'b1;
-//        sh_reg_trans    =  8'b0;
-//        sh_reg_data     =  128'b0;
-//        sh_reg_data_we  =  1'b0;
-//        sh_trans_we     =  1'b0;
+        rst             =  1'b1;
+        sh_reg_trans    =  8'b0;
+        sh_reg_data     =  128'b0;
+        sh_reg_data_we  =  1'b0;
+        sh_trans_we     =  1'b0;
         
-//        MISO_i          =  1'bz;
-//        is_MISO_z_i     =  1'b1;
+        MISO_i          =  1'bz;
+        is_MISO_z_i     =  1'b1;
         
-//        master_mode_nrw =  1'b0;
+        master_mode_nrw =  1'b0;
         
-//        // choose flash in selector
-//        #(PERIOD);
-//        rst         =  1'b0;
-//        cs_i        =  3'b100;
-//        data_size_i =  12'd32;
+        // choose flash in selector
+        #(PERIOD);
+        rst         =  1'b0;
+        cs_i        =  3'b100;
+        data_size_i =  12'd32;
 
-//        // to send opcode
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b1;
-//        sh_trans = 8'h0B;
+        // to send opcode
+        #(PERIOD/2);
+        sh_trans_we   = 1'b1;
+        sh_trans = 8'h0B;
         
-//        // set next byte and write disable
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // set next byte and write disable
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        sh_trans = 8'hBB;
+        sh_trans = 8'hBB;
         
-//        // wait till opcode byte is full read
-//        repeat (8) @(posedge clk);
+        // wait till opcode byte is full read
+        repeat (8) @(posedge clk);
         
-//        // to send 1st addr
-//        sh_trans_we   = 1'b1;
+        // to send 1st addr
+        sh_trans_we   = 1'b1;
         
         
-//        // addr 2nd byte is the same and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // addr 2nd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 2nd addr
-//        sh_trans_we   = 1'b1;
+        // to send 2nd addr
+        sh_trans_we   = 1'b1;
         
-//        // addr 3rd byte is the same and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // addr 3rd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 3rd addr
-//        sh_trans_we   = 1'b1;
+        // to send 3rd addr
+        sh_trans_we   = 1'b1;
         
-//        // dummy clocks byte and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans = 8'hzz;
+        // dummy clocks byte and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans = 8'hzz;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send dummy byte
-//        sh_trans_we   = 1'b1;
+        // to send dummy byte
+        sh_trans_we   = 1'b1;
         
-//        // write enable false, finished service frames
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // write enable false, finished service frames
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // -------------------- read data -------------------- 
-//        MISO_i          = 1'b1;
-//        is_MISO_z_i     = 1'b0;
+        // -------------------- read data -------------------- 
+        MISO_i          = 1'b1;
+        is_MISO_z_i     = 1'b0;
         
-//        repeat (32) @(posedge clk);
+        repeat (32) @(posedge clk);
         
-//        MISO_i          = 1'bz;
-//        is_MISO_z_i     = 1'b1;
+        MISO_i          = 1'bz;
+        is_MISO_z_i     = 1'b1;
         
-//        // ====================================== 7seg out ======================================
-//        cs_i        =  3'b000;
-//        sr_out_en_i =  1'b1;
+        // ====================================== 7seg out ======================================
+        cs_i        =  3'b000;
+        sr_out_en_i =  1'b1;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        sr_out_en_i =  1'b0;
+        sr_out_en_i =  1'b0;
         
         // ==================== write 4 bytes to 0hAAAA_AAAA_AAAA in flash ====================
         // -------------------- send opcode and address --------------------  
-//        rst             =  1'b1;
-//        sh_reg_trans    =  8'b0;
-//        sh_reg_data     =  128'b0;
-//        sh_reg_data_we  =  1'b0;
-//        sh_trans_we     =  1'b0;
+        rst             =  1'b1;
+        sh_reg_trans    =  8'b0;
+        sh_reg_data     =  128'b0;
+        sh_reg_data_we  =  1'b0;
+        sh_trans_we     =  1'b0;
         
-//        MISO_i          =  1'bz;
-//        is_MISO_z_i     =  1'b1;
+        MISO_i          =  1'bz;
+        is_MISO_z_i     =  1'b1;
         
-//        master_mode_nrw =  1'b1;
+        master_mode_nrw =  1'b1;
         
-//        // choose flash in selector
-//        #(PERIOD);
-//        rst         =  1'b0;
-//        cs_i        =  3'b100;
-//        data_size_i =  12'd16;   // 2 bytes
+        // choose flash in selector
+        #(PERIOD);
+        rst         =  1'b0;
+        cs_i        =  3'b100;
+        data_size_i =  12'd16;   // 2 bytes
         
-//        // to send we opcode
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b1;
-//        sh_trans = 8'h06;
+        // to send we opcode
+        #(PERIOD/2);
+        sh_trans_we   = 1'b1;
+        sh_trans = 8'h06;
         
-//        // set next opcode and write disable
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans = 8'h02;
+        // set next opcode and write disable
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans = 8'h02;
         
-//        // wait till we opcode byte is full read
-//        repeat (8) @(posedge clk);
+        // wait till we opcode byte is full read
+        repeat (8) @(posedge clk);
         
-//        // to send we opcode
-//        sh_trans_we   = 1'b1;
+        // to send we opcode
+        sh_trans_we   = 1'b1;
         
-//        // set next byte and write disable
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans = 8'hAA;
+        // set next byte and write disable
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans = 8'hAA;
         
-//        // wait till opcode byte is full read
-//        repeat (8) @(posedge clk);
+        // wait till opcode byte is full read
+        repeat (8) @(posedge clk);
         
-//        // to send 1st addr
-//        sh_trans_we   = 1'b1;
+        // to send 1st addr
+        sh_trans_we   = 1'b1;
         
-//        // addr 2nd byte is the same and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // addr 2nd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 2nd addr
-//        sh_trans_we   = 1'b1;        
+        // to send 2nd addr
+        sh_trans_we   = 1'b1;        
         
-//        // addr 3rd byte is the same and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        // addr 3rd byte is the same and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 3rd addr
-//        sh_trans_we   = 1'b1;
+        // to send 3rd addr
+        sh_trans_we   = 1'b1;
         
-//        // -------------------- send 2 bytes data --------------------  
-//        // 1st byte data to send and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans      = 8'h99;
+        // -------------------- send 2 bytes data --------------------  
+        // 1st byte data to send and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans      = 8'h99;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 1st data byte
-//        sh_trans_we   = 1'b1;
+        // to send 1st data byte
+        sh_trans_we   = 1'b1;
         
-//        // 1st byte data to send and write enable false
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans      = 8'hAA;
+        // 1st byte data to send and write enable false
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans      = 8'hAA;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // to send 2nd data byte
-//        sh_trans_we   = 1'b1;
+        // to send 2nd data byte
+        sh_trans_we   = 1'b1;
         
-//        // // write disable opcode set, finished service frames
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
-//        sh_trans      = 8'h04;
+        // // write disable opcode set, finished service frames
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans      = 8'h04;
         
-//        // write 2nd byte data
-//        repeat (8) @(posedge clk);
+        // write 2nd byte data
+        repeat (8) @(posedge clk);
         
         
-//        // to send write disable opcode
-//        sh_trans_we   = 1'b1;
+        // to send write disable opcode
+        sh_trans_we   = 1'b1;
         
-//        #(PERIOD/2);
-//        sh_trans_we   = 1'b0;
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        // ====================================== 7seg out ======================================
-//        cs_i        =  3'b000;
-//        sr_out_en_i = 1'b1;
+        // ====================================== 7seg out ======================================
+        cs_i        =  3'b000;
+        sr_out_en_i = 1'b1;
         
-//        repeat (8) @(posedge clk);
+        repeat (8) @(posedge clk);
         
-//        sr_out_en_i = 1'b0;
+        sr_out_en_i = 1'b0;
  
  
 // ==================== FAST read 4 bytes from 0hDDDD_DDDD_DDDD in flash ====================
@@ -478,6 +478,7 @@ module tb_spi_master(
 //        sh_trans_we   = 1'b0;
         
 //        sh_trans = 8'hDD;
+        
         
         
         $finish();
