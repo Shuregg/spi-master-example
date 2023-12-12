@@ -36,10 +36,6 @@ module tb_spi_master(
     
     logic           is_MISO_z_i;
 
-
-    logic  [3:0]    sevenseg_decode;
-    logic  [6:0]    sevenseg;
-
     spi_master2v0 dut
     (
     //  Controller Interface
@@ -77,25 +73,28 @@ module tb_spi_master(
     .is_MISO_z_i    (is_MISO_z_i)
     );    
 
-    // Variant #2. SPI.
-    // Modules used: W25Q16 Flash memory, 7-segment indicator, 74HC595 shift register, MPU6000 sensor.
-    // Tasks for testbench:
-    // 1. Read 4 bytes of data from Flash memory W25Q16.
-    // 2. Output the received data to eight 7-segment indicators connected via shift registers 74HC595.
-    // 3. Write data to Flash memory W25Q16 at any available address.
-    // 4. Read data from the W25Q16 Flash memory at any available address using the Fast Read command.
-    // 5. Display the received data on 7-segment indicators.
-    // 6. Read data from MPU6000 at addresses 114-117.
-    // 7. Display the received data on 7-segment indicators.
-    // Connect the 7-segment indicators according to the serial scheme, the other devices - according to the parallel scheme.
+   // Variant #2. SPI.
+   // Modules used: W25Q16 Flash memory, 7-segment indicator, 74HC595 shift register, MPU6000 sensor.
+   // Tasks for testbench:
+   // 1. Read 4 bytes of data from Flash memory W25Q16.
+   // 2. Output the received data to eight 7-segment indicators connected via shift registers 74HC595.
+   // 3. Write data to Flash memory W25Q16 at any available address.
+   // 4. Read data from the W25Q16 Flash memory at any available address using the Fast Read command.
+   // 5. Display the received data on 7-segment indicators.
+   // 6. Read data from MPU6000 at addresses 114-117.
+   // 7. Display the received data on 7-segment indicators.
+   // Connect the 7-segment indicators according to the serial scheme, the other devices - according to the parallel scheme.
    
-   logic [7:0]  sh_reg_trans; // reg
-   logic [7:0]  sh_trans;     // wire to set trans reg
-   logic        sh_trans_we;  // trans we
+   logic [7:0]   sh_reg_trans; // reg
+   logic [7:0]   sh_trans;     // wire to set trans reg
+   logic         sh_trans_we;  // trans we
    
    logic [127:0] sh_reg_data;
    logic         sh_reg_data_we;
    logic         sh_reg_out_data_en;
+   
+   logic  [3:0]    sevenseg_decode [7:0];
+   logic  [6:0]    sevenseg        [7:0];
    
    assign sh_reg_data_we     = sr_we_o;
    assign sh_reg_out_data_en = sr_out_en_o;
@@ -104,9 +103,105 @@ module tb_spi_master(
    
    parameter PERIOD = 7'd100;
 
+   assign sevenseg_decode[0] = (sh_reg_out_data_en) ? sh_reg_data[3:0]   : 4'bx;
+   assign sevenseg_decode[1] = (sh_reg_out_data_en) ? sh_reg_data[7:4]   : 4'bx;
+   assign sevenseg_decode[2] = (sh_reg_out_data_en) ? sh_reg_data[11:8]  : 4'bx;
+   assign sevenseg_decode[3] = (sh_reg_out_data_en) ? sh_reg_data[15:12] : 4'bx;
+   assign sevenseg_decode[4] = (sh_reg_out_data_en) ? sh_reg_data[19:16] : 4'bx;
+   assign sevenseg_decode[5] = (sh_reg_out_data_en) ? sh_reg_data[23:20] : 4'bx;
+   assign sevenseg_decode[6] = (sh_reg_out_data_en) ? sh_reg_data[27:24] : 4'bx;
+   assign sevenseg_decode[7] = (sh_reg_out_data_en) ? sh_reg_data[31:28] : 4'bx;
+
     initial begin
-        // ==================== read 4 bytes from 0h000000 in flash ====================
+        // ==================== read 4 bytes from 0hBBBB_BBBB_BBBB in flash ====================
         // -------------------- send opcode and address -------------------- 
+//        rst             =  1'b1;
+//        sh_reg_trans    =  8'b0;
+//        sh_reg_data     =  128'b0;
+//        sh_reg_data_we  =  1'b0;
+//        sh_trans_we     =  1'b0;
+        
+//        MISO_i          =  1'bz;
+//        is_MISO_z_i     =  1'b1;
+        
+//        master_mode_nrw =  1'b0;
+        
+//        // choose flash in selector
+//        #(PERIOD);
+//        rst         =  1'b0;
+//        cs_i        =  3'b100;
+//        data_size_i =  12'd32;
+
+//        // to send opcode
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b1;
+//        sh_trans = 8'h0B;
+        
+//        // set next byte and write disable
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+        
+//        sh_trans = 8'hBB;
+        
+//        // wait till opcode byte is full read
+//        repeat (8) @(posedge clk);
+        
+//        // to send 1st addr
+//        sh_trans_we   = 1'b1;
+        
+        
+//        // addr 2nd byte is the same and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+        
+//        repeat (8) @(posedge clk);
+        
+//        // to send 2nd addr
+//        sh_trans_we   = 1'b1;
+        
+//        // addr 3rd byte is the same and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+        
+//        repeat (8) @(posedge clk);
+        
+//        // to send 3rd addr
+//        sh_trans_we   = 1'b1;
+        
+//        // dummy clocks byte and write enable false
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+//        sh_trans = 8'hzz;
+        
+//        repeat (8) @(posedge clk);
+        
+//        // to send dummy byte
+//        sh_trans_we   = 1'b1;
+        
+//        // write enable false, finished service frames
+//        #(PERIOD/2);
+//        sh_trans_we   = 1'b0;
+        
+//        repeat (8) @(posedge clk);
+        
+//        // -------------------- read data -------------------- 
+//        MISO_i          = 1'b1;
+//        is_MISO_z_i     = 1'b0;
+        
+//        repeat (32) @(posedge clk);
+        
+//        MISO_i          = 1'bz;
+//        is_MISO_z_i     = 1'b1;
+        
+//        // ====================================== 7seg out ======================================
+//        sr_out_en_i = 1'b1;
+        
+//        repeat (8) @(posedge clk);
+        
+//        sr_out_en_i = 1'b0;
+        
+        // ==================== write 4 bytes to 0hAAAA_AAAA_AAAA in flash ====================
+        // -------------------- send opcode and address --------------------  
         rst             =  1'b1;
         sh_reg_trans    =  8'b0;
         sh_reg_data     =  128'b0;
@@ -116,31 +211,41 @@ module tb_spi_master(
         MISO_i          =  1'bz;
         is_MISO_z_i     =  1'b1;
         
-        master_mode_nrw =  1'b0;
+        master_mode_nrw =  1'b1;
         
         // choose flash in selector
         #(PERIOD);
         rst         =  1'b0;
         cs_i        =  3'b100;
-        data_size_i =  12'd32;
-
-        // to send opcode
+        data_size_i =  12'd16;   // 2 bytes
+        
+        // to send we opcode
         #(PERIOD/2);
         sh_trans_we   = 1'b1;
-        sh_trans = 8'h0B;
+        sh_trans = 8'h06;
         
         // set next opcode and write disable
         #(PERIOD/2);
         sh_trans_we   = 1'b0;
+        sh_trans = 8'h02;
         
-        sh_trans = 8'hBB;
+        // wait till we opcode byte is full read
+        repeat (8) @(posedge clk);
+        
+        // to send we opcode
+        #(PERIOD/2);
+        sh_trans_we   = 1'b1;
+        
+        // set next byte and write disable
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans = 8'hAA;
         
         // wait till opcode byte is full read
         repeat (8) @(posedge clk);
         
         // to send 1st addr
         sh_trans_we   = 1'b1;
-        
         
         // addr 2nd byte is the same and write enable false
         #(PERIOD/2);
@@ -149,7 +254,7 @@ module tb_spi_master(
         repeat (8) @(posedge clk);
         
         // to send 2nd addr
-        sh_trans_we   = 1'b1;
+        sh_trans_we   = 1'b1;        
         
         // addr 3rd byte is the same and write enable false
         #(PERIOD/2);
@@ -160,36 +265,40 @@ module tb_spi_master(
         // to send 3rd addr
         sh_trans_we   = 1'b1;
         
-        // dummy clocks byte and write enable false
+        // -------------------- send 2 bytes data --------------------  
+        // 1st byte data to send and write enable false
         #(PERIOD/2);
         sh_trans_we   = 1'b0;
-        sh_trans = 8'hzz;
+        sh_trans      = 8'h99;
         
         repeat (8) @(posedge clk);
         
-        // to send dummy byte
+        // 1st byte data to send data byte
         sh_trans_we   = 1'b1;
         
-        // write enable false, finished service frames
+        // 1st byte data to send and write enable false
         #(PERIOD/2);
         sh_trans_we   = 1'b0;
+        sh_trans      = 8'hAA;
         
         repeat (8) @(posedge clk);
         
-        // -------------------- read data -------------------- 
-        MISO_i          = 1'b1;
-        is_MISO_z_i     = 1'b0;
-        repeat (32) @(posedge clk);
+        // 2nd byte data to send data byte
+        sh_trans_we   = 1'b1;
         
-        // ====================================== 7seg out ======================================
-        sr_out_en_i = 1'b1;
+        // // write disable opcode set, finished service frames
+        #(PERIOD/2);
+        sh_trans_we   = 1'b0;
+        sh_trans      = 8'h04;
+        
+        // write disable opcode
         repeat (8) @(posedge clk);
-        sr_out_en_i = 1'b0;
+        
+        
         
         $finish();
 
     end
-
 
 
 
