@@ -116,7 +116,7 @@ module tb_spi_master(
         MISO_i          =  1'bz;
         is_MISO_z_i     =  1'b1;
         
-        master_mode_nrw =  1'b1;
+        master_mode_nrw =  1'b0;
         
         // choose flash in selector
         #(PERIOD);
